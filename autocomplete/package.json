@@ -15,8 +15,11 @@
     "@floating-ui/react": "^0.26.19",
     "@mui/icons-material": "^5.16.0",
     "@mui/material": "^5.16.0",
+    "country-json": "^2.2.4",
+    "country-list-json": "^1.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-flags-select": "^2.2.3",
     "react-select-country-list": "^2.2.3",
     "use-react-countries": "^2.0.1"
   },

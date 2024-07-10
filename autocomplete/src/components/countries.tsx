@@ -1,69 +1,79 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import countriesData from '../../countrydata.json';
 import '../App.css';
+import Countries from '../countriesdata.json';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 
-// type Country = {
-//   code: string;
-//   name: string;
-// };
-// const countries: Country[] = countriesData as Country[];
+type SelectOption = {
+  label: string;
+  value: string;
+};
 
-// function CountrySelector() {
-//   const [search, setSearch] = useState('');
+type SelectProps = {
+  options: typeof Countries;
+  value?: SelectOption;
+  onChange?: (value: SelectOption | undefined) => void;
+  focusInput: () => void;
+};
 
-//   const filteredCountries = useMemo(() => {
-//     return countries.filter(country =>
-//       country.name.toLowerCase().includes(search.toLowerCase())
-//     );
-//   }, [search, countries]);
+const CountrySelector = forwardRef<HTMLDivElement, SelectProps>(
+  ({ options, onChange, focusInput }, ref) => {
+    const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-//   return (
-//     <div className='dropdown'>
-//       {filteredCountries.map((item) => (
-//         <div key={item.code} className='dropdown_row'>{item.name}</div>
-//       ))}
-//     </div>
-//   );
-// }
+    useImperativeHandle(ref, () => containerRef.current!);
 
-// export default CountrySelector;
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        setFocusedIndex((prev) => (prev === null ? 0 : Math.min((prev ?? 0) + 1, options.length - 1)));
+      } else if (e.key === 'ArrowUp') {
+        if (focusedIndex === 0) {
+          focusInput();
+        } else {
+          setFocusedIndex((prev) => (prev === null ? 0 : Math.max((prev ?? 0) - 1, 0)));
+        }
+      } else if (e.key === 'Enter' && focusedIndex !== null) {
+        const selectedCountry = options[focusedIndex];
+        if (onChange) onChange({ label: selectedCountry.country, value: selectedCountry.country });
+      }
+    };
 
-const CountrySelector =()=>{
-  const [countries, setCountries] = useState()
-  useEffect(()=>{
-    fetch("https://restcountries.com/v2/all?fields=name,currencies")
-      .then((res)=> res.json())
-      .then((data)=>{
-          setCountries(data)
-      })
-},[])
+    useEffect(() => {
+      const handleKeyPress = (e: KeyboardEvent) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+        }
+      };
 
-  return(
-    <div className='absolute text-left items-start justify-start mt-2 w-full overflow-hidden rounded-md bg-white'>
-      <div className='cursor-pointer py-2 px-3 bg-white'>
-        <ul className='text-xs mt-2 overflow-y-auto max-h-60'>
-          {countries?.map((country) => (
-            <li 
-              key={country?.name} 
-              className='p-2 text-sm text-gray-600 hover:bg-blue-600 hover:text-white'
-            >
-               <div>{country.name}</div>
-              {country.currencies && country.currencies.length > 0 && (
-                <ul className='ml-4'>
-                  {country.currencies.map((currency) => (
-                    <li 
-                      key={`${country.name}-${currency.code}`} 
-                      className='p-2 text-sm text-gray-600 hover:bg-blue-600 hover:text-white'>
-                      {currency.name} ({currency.code})
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
-        </div>
-    </div>
-)}
+      document.addEventListener('keydown', handleKeyPress);
+      return () => {
+        document.removeEventListener('keydown', handleKeyPress);
+      };
+    }, []);
+
+    return (
+      <div
+        className="dropdown-content"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        ref={containerRef}
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        {options.map((country, index) => (
+          <div
+            key={country.country}
+            className={`dropdown-item cursor-pointer odd:bg-gray-50 text-gray-600 bg-white ${
+              focusedIndex === index ? 'bg-blue-200 odd:bg-blue-200' : ''
+            }`}
+            tabIndex={-1}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onChange && onChange({ label: country.country, value: country.country })}
+          >
+            <img className="w-1/6" src={country.flag} alt={country.country} />
+            <span className="overflow-hidden">{country.country}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+);
 
 export default CountrySelector;
