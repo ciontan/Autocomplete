@@ -1,8 +1,8 @@
 # Autocomplete props naming
-onChange -> handleOptionChange
-onInputChange -> handleSearchChange
-options(Array<T>) -> filteredCountries and Countries
-filterOptions -> Countries.filter()
+onChange -> handleOptionChange /n
+onInputChange -> handleSearchChange /n 
+options(Array<T>) -> filteredCountries and Countries /n
+filterOptions -> Countries.filter() /n
 
 Controls
 At minimum, the component should be able to be controlled via the following controls:
